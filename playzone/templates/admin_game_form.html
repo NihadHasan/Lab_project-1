@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ 'Edit' if game else 'Add' }} game - PlayZone</title><link rel="stylesheet" href="/css/style.css">
+</head><body>
+<header id="site-header"><div class="wrap bar"><a class="logo" href="/">🎮 PlayZone</a><a href="/admin">Back to dashboard</a></div></header>
+<main class="wrap admin-page"><section class="admin-section form-section">
+  <h1>{{ 'Edit game' if game else 'Add a game' }}</h1>
+  {% if error %}<p class="form-error" role="alert">{{ error }}</p>{% endif %}
+  <form method="post" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>URL slug<input name="slug" required maxlength="80" pattern="[a-z0-9]+(-[a-z0-9]+)*" value="{{ game.slug if game else '' }}"></label>
+    <label>Title<input name="title" required maxlength="100" value="{{ game.title if game else '' }}"></label>
+    <label>Description<textarea name="description" required maxlength="1000" rows="4">{{ game.description if game else '' }}</textarea></label>
+    <label>Category<select name="category_id" required>{% for category in categories %}<option value="{{ category.id }}" {% if game and game.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>{% endfor %}</select></label>
+    <label>Upload a single-file HTML5 game<input name="game_file" type="file" accept=".html,text/html"><small>Self-contained HTML only, up to 10 MB. Uploaded games run sandboxed.</small></label>
+    <label>Or use an existing local game file<input name="game_path" pattern="games/.+\.html" placeholder="games/my-game.html" value="{{ game.game_path if game and game.game_path.startswith('games/') else '' }}"><small>The HTML file must already be inside the games/ folder.</small></label>
+    <label>Or use a trusted HTTPS embed URL<input name="embed_url" type="url" placeholder="https://trusted-host.example/game/" value="{{ game.game_path if game and game.game_path.startswith('https://') else '' }}"><small>The domain must be listed in PLAYZONE_EMBED_HOSTS in your private .env file.</small></label>
+    <label>Thumbnail (PNG, JPG, GIF, WebP; max 2 MB)<input name="thumbnail" type="file" accept="image/png,image/jpeg,image/gif,image/webp"></label>
+    {% if game and game.thumbnail_path %}<label class="check-label"><input type="checkbox" name="remove_thumbnail" value="1"> Remove current thumbnail</label>{% endif %}
+    <div class="check-grid"><label class="check-label"><input type="checkbox" name="featured" {% if game and game.featured %}checked{% endif %}> Featured</label><label class="check-label"><input type="checkbox" name="popular" {% if game and game.popular %}checked{% endif %}> Popular</label><label class="check-label"><input type="checkbox" name="is_new" {% if game and game.is_new %}checked{% endif %}> New</label><label class="check-label"><input type="checkbox" name="published" {% if not game or game.published %}checked{% endif %}> Published</label></div>
+    <div class="form-actions"><button class="btn" type="submit">{{ 'Save changes' if game else 'Add game' }}</button><a class="btn btn-secondary" href="/admin">Cancel</a></div>
+  </form>
+</section></main>
+</body></html>

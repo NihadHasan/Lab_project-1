@@ -1,0 +1,29 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html,body{margin:0;height:100%;background:#064e3b;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;color:#fff;overflow:hidden}
+canvas{background:#065f46;max-width:100%;max-height:calc(100% - 40px);aspect-ratio:1;touch-action:none;border-radius:8px}#s{height:34px;line-height:34px;font-weight:700}</style></head>
+<body><div id="s">Score: 0 — press an arrow key or swipe to start</div><canvas id="c" width="400" height="400"></canvas>
+<script>
+const c=document.getElementById("c"),x=c.getContext("2d"),N=20,S=20,sc=document.getElementById("s");
+let snake,dir,next,food,score,timer;
+function start(){snake=[{x:10,y:10}];dir={x:0,y:0};next=dir;score=0;place();clearInterval(timer);timer=setInterval(tick,110);draw();sc.textContent="Score: 0"}
+function place(){do{food={x:Math.random()*N|0,y:Math.random()*N|0}}while(snake.some(p=>p.x==food.x&&p.y==food.y))}
+function turn(d){if(d.x==-dir.x&&d.y==-dir.y&&(dir.x||dir.y))return;next=d}
+function tick(){
+  dir=next;if(!dir.x&&!dir.y)return;
+  const h={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
+  if(h.x<0||h.y<0||h.x>=N||h.y>=N||snake.some(p=>p.x==h.x&&p.y==h.y)){
+    clearInterval(timer);parent.postMessage({type:"score",score},"*");sc.textContent="Game over! Score: "+score+" — press any key / tap to retry";over=true;return}
+  snake.unshift(h);
+  if(h.x==food.x&&h.y==food.y){score+=10;place();sc.textContent="Score: "+score}else snake.pop();
+  draw()}
+function draw(){x.clearRect(0,0,400,400);x.fillStyle="#fbbf24";x.beginPath();x.arc(food.x*S+10,food.y*S+10,8,0,7);x.fill();
+  snake.forEach((p,i)=>{x.fillStyle=i?"#a7f3d0":"#fff";x.fillRect(p.x*S+1,p.y*S+1,S-2,S-2)})}
+let over=false;
+addEventListener("keydown",e=>{
+  const m={ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0}}[e.key];
+  if(m){e.preventDefault();if(over){over=false;start()}turn(m)}});
+let t0;c.addEventListener("touchstart",e=>{t0=e.touches[0];if(over){over=false;start()}},{passive:true});
+c.addEventListener("touchend",e=>{const t=e.changedTouches[0],dx=t.clientX-t0.clientX,dy=t.clientY-t0.clientY;
+  if(Math.abs(dx)>Math.abs(dy))turn({x:Math.sign(dx),y:0});else turn({x:0,y:Math.sign(dy)})});
+start();
+</script></body></html>

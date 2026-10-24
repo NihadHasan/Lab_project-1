@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin dashboard - PlayZone</title><link rel="stylesheet" href="/css/style.css">
+</head><body>
+<header id="site-header"><div class="wrap bar"><a class="logo" href="/">🎮 PlayZone</a><nav class="admin-nav"><a href="/">View site</a><form method="post" action="{{ url_for('admin_logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-secondary" type="submit">Log out</button></form></nav></div></header>
+<main class="wrap admin-page">
+  <div class="admin-heading"><div><p class="eyebrow">PLAYZONE CONTROL ROOM</p><h1>Game dashboard</h1><p>Signed in as {{ session.admin_username }}.</p></div><a class="btn" href="{{ url_for('admin_game_new') }}">+ Add game</a></div>
+  {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<p class="notice {{ category }}">{{ message }}</p>{% endfor %}{% endwith %}
+  <div class="stat-grid"><div><span>Catalog entries</span><strong>{{ stats.games }}</strong></div><div><span>Recorded plays</span><strong>{{ stats.plays }}</strong></div><div><span>Leaderboard scores</span><strong>{{ stats.scores }}</strong></div></div>
+  <section class="admin-section"><h2>Categories</h2>
+    <form class="category-add" method="post" action="{{ url_for('admin_category_new') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label for="category-name">Add category</label><input id="category-name" name="name" required maxlength="60" placeholder="Category name"><button class="btn btn-small" type="submit">Add</button></form>
+    <ul class="category-list">{% for category in categories %}<li><span><strong>{{ category.name }}</strong><small>{{ category.game_count }} games · {{ category.slug }}</small></span>{% if category.game_count == 0 %}<form method="post" action="{{ url_for('admin_category_delete', category_id=category.id) }}" onsubmit="return confirm('Delete the {{ category.name }} category?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-danger btn-small" type="submit">Delete</button></form>{% else %}<span class="category-used">In use</span>{% endif %}</li>{% endfor %}</ul>
+  </section>
+  <section class="admin-section"><h2>Games</h2>
+    <div class="table-scroll"><table><thead><tr><th>Order</th><th>Game</th><th>Category</th><th>Status</th><th>Plays</th><th>Scores</th><th>Actions</th></tr></thead><tbody>
+      {% for game in games %}<tr>
+        <td><div class="order-buttons"><form method="post" action="{{ url_for('admin_game_reorder') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="game_id" value="{{ game.id }}"><input type="hidden" name="direction" value="up"><button class="icon-button" title="Move up" aria-label="Move {{ game.title }} up">↑</button></form><form method="post" action="{{ url_for('admin_game_reorder') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="game_id" value="{{ game.id }}"><input type="hidden" name="direction" value="down"><button class="icon-button" title="Move down" aria-label="Move {{ game.title }} down">↓</button></form></div></td>
+        <td><strong>{{ game.title }}</strong><small>{{ game.slug }}</small></td><td>{{ game.category }}</td><td>{{ 'Published' if game.published else 'Draft' }}</td><td>{{ game.play_count }}</td><td>{{ game.score_count }}</td>
+        <td><div class="action-buttons"><a class="btn btn-small" href="{{ url_for('admin_game_edit', game_id=game.id) }}">Edit</a><form method="post" action="{{ url_for('admin_game_delete', game_id=game.id) }}" onsubmit="return confirm('Delete {{ game.title }} and its score/play records?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-danger btn-small" type="submit">Delete</button></form></div></td>
+      </tr>{% else %}<tr><td colspan="7">No games are in the catalog.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+  <section class="admin-section"><h2>Recent leaderboard records</h2>
+    <div class="table-scroll"><table><thead><tr><th>Player</th><th>Game</th><th>Score</th><th>Date</th></tr></thead><tbody>
+      {% for score in scores %}<tr><td>{{ score.player_name }}</td><td>{{ score.game_title }}</td><td>{{ score.score }}</td><td>{{ score.created_at }}</td></tr>{% else %}<tr><td colspan="4">No scores recorded yet.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+</main>
+</body></html>

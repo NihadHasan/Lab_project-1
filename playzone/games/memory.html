@@ -1,0 +1,18 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html,body{margin:0;height:100%;background:#4c1d95;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;color:#fff}
+#g{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:min(90vw,70vh,420px)}
+.k{aspect-ratio:1;border:0;border-radius:14px;font-size:clamp(1.6rem,8vw,3rem);background:#7c3aed;color:#fff;cursor:pointer}
+.k.on{background:#fff}.k.done{background:#34d399}#m{font-weight:700;margin-bottom:12px}button.r{margin-top:14px;padding:8px 22px;border:0;border-radius:99px;font-weight:700;cursor:pointer}</style></head>
+<body><div id="m">Moves: 0</div><div id="g"></div><button class="r" onclick="init()">Restart</button>
+<script>
+const E=["🍎","🚀","⚽","🎸","🐱","🌈","🍕","👑"];let a,b,moves,found,lock;
+function init(){const d=[...E,...E].sort(()=>Math.random()-.5);moves=0;found=0;a=b=null;lock=false;m.textContent="Moves: 0";
+ g.innerHTML="";d.forEach(e=>{const k=document.createElement("button");k.className="k";k.textContent="?";k.onclick=()=>flip(k,e);g.appendChild(k)})}
+function flip(k,e){if(lock||k.classList.contains("on")||k.classList.contains("done"))return;
+ k.classList.add("on");k.textContent=e;k.e=e;
+ if(!a){a=k;return}b=k;moves++;m.textContent="Moves: "+moves;lock=true;
+ setTimeout(()=>{if(a.e==b.e){a.className=b.className="k done";found++;
+   if(found==8){const s=Math.max(0,200-moves*10);m.textContent="You won in "+moves+" moves! Score: "+s;parent.postMessage({type:"score",score:s},"*")}}
+  else{[a,b].forEach(k=>{k.className="k";k.textContent="?"})}a=b=null;lock=false},600)}
+init();
+</script></body></html>
